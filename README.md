@@ -1,0 +1,2 @@
+# API-Manual-Testing-E-Commerce-Web-Application-automationexercise.com-
+API Manual Testing – E-Commerce Web Application is a Postman collection that tests all 14 APIs of the Automation Exercise e-commerce website. Every request is verified with JavaScript assertions (pm.test) covering status codes, response time, response structure, data types, and business rules, for both positive and negative scenarios.
