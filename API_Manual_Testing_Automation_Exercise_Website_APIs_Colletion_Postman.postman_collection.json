@@ -1,0 +1,654 @@
+{
+  "info": {
+    "_postman_id": "9b40ffdb-3429-4ffa-b4c2-b439e45b05b5",
+    "name": "API_Manual_Testing_Automation_Exercise_Website_APIs_Colletion_Postman",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57316719",
+    "_collection_link": "https://go.postman.co/collection/57316719-9b40ffdb-3429-4ffa-b4c2-b439e45b05b5?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "API_1 : Get All Products List-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 1) Status code & response time\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});\r\n\r\n// 2) الـ API ده بيرجع Content-Type: text/html غالباً، فبنعمل parse يدوي\r\nlet jsonData;\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\n// 3) Body structure\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.eql(200);\r\n});\r\n\r\npm.test(\"products is a non-empty array\", function () {\r\n    pm.expect(jsonData.products).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\n// 4) Fields لكل منتج\r\npm.test(\"Each product has required fields with correct types\", function () {\r\n    jsonData.products.forEach(function (p) {\r\n        pm.expect(p.id, \"id\").to.be.a(\"number\");\r\n        pm.expect(p.name, \"name of id \" + p.id).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(p.price, \"price of id \" + p.id).to.be.a(\"string\").and.match(/^Rs\\. \\d+$/);\r\n        pm.expect(p.brand, \"brand of id \" + p.id).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(p.category, \"category of id \" + p.id).to.be.an(\"object\");\r\n        pm.expect(p.category.usertype.usertype, \"usertype of id \" + p.id).to.be.a(\"string\");\r\n        pm.expect(p.category.category, \"category name of id \" + p.id).to.be.a(\"string\").and.not.empty;\r\n    });\r\n});\r\n\r\n// 5) Business rules\r\npm.test(\"All product ids are unique\", function () {\r\n    const ids = jsonData.products.map(p => p.id);\r\n    pm.expect(new Set(ids).size).to.eql(ids.length);\r\n});\r\n\r\npm.test(\"usertype is one of Men / Women / Kids\", function () {\r\n    const valid = [\"Men\", \"Women\", \"Kids\"];\r\n    jsonData.products.forEach(function (p) {\r\n        pm.expect(valid, \"usertype of id \" + p.id).to.include(p.category.usertype.usertype);\r\n    });\r\n});\r\n\r\npm.test(\"Price is a positive number\", function () {\r\n    jsonData.products.forEach(function (p) {\r\n        const value = parseInt(p.price.replace(\"Rs. \", \"\"), 10);\r\n        pm.expect(value, \"price of id \" + p.id).to.be.above(0);\r\n    });\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/productsList",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "productsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_2 : POST To All Products List-405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// الـ request: POST https://automationexercise.com/api/productsList\r\n\r\nlet jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});\r\n\r\n// الـ body\r\npm.test(\"responseCode inside body is 405\", function () {\r\n    pm.expect(jsonData.responseCode).to.eql(405);\r\n});\r\n\r\npm.test(\"Message is 'This request method is not supported.'\", function () {\r\n    pm.expect(jsonData.message).to.eql(\"This request method is not supported.\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response does not contain products list\", function () {\r\n    pm.expect(jsonData).to.not.have.property(\"products\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/productsList",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "productsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_3 : Get All Brands List-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// الـ request: GET https://automationexercise.com/api/brandsList\r\n\r\nlet jsonData;\r\n\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\n// Body structure\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.eql(200);\r\n});\r\n\r\npm.test(\"brands is a non-empty array\", function () {\r\n    pm.expect(jsonData.brands).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\npm.test(\"Response does not contain products list\", function () {\r\n    pm.expect(jsonData).to.not.have.property(\"products\");\r\n});\r\n\r\n// Fields لكل brand\r\npm.test(\"Each brand has id (number) and brand (non-empty string)\", function () {\r\n    jsonData.brands.forEach(function (b) {\r\n        pm.expect(b, \"brand object\").to.have.all.keys(\"id\", \"brand\");\r\n        pm.expect(b.id, \"id\").to.be.a(\"number\");\r\n        pm.expect(b.brand, \"brand name of id \" + b.id).to.be.a(\"string\").and.not.empty;\r\n    });\r\n});\r\n\r\n// Business rules\r\npm.test(\"All brand ids are unique\", function () {\r\n    const ids = jsonData.brands.map(b => b.id);\r\n    pm.expect(new Set(ids).size).to.eql(ids.length);\r\n});\r\n\r\npm.test(\"Brand names belong to the known brands\", function () {\r\n    const known = [\"Polo\", \"H&M\", \"Madame\", \"Mast & Harbour\", \"Babyhug\",\r\n                   \"Allen Solly Junior\", \"Kookie Kids\", \"Biba\"];\r\n    jsonData.brands.forEach(function (b) {\r\n        pm.expect(known, \"brand of id \" + b.id).to.include(b.brand);\r\n    });\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/brandsList",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "brandsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_4 : PUT To All Brands List-405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// الـ request: PUT https://automationexercise.com/api/brandsList\n\nlet jsonData;\n\npm.test(\"Response time is less than 3000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(3000);\n});\n\npm.test(\"Body is a valid JSON\", function () {\n    jsonData = JSON.parse(pm.response.text());\n    pm.expect(jsonData).to.be.an(\"object\");\n});\n\n// الـ body\npm.test(\"responseCode inside body is 405\", function () {\n    pm.expect(jsonData.responseCode).to.eql(405);\n});\n\npm.test(\"Message is 'This request method is not supported.'\", function () {\n    pm.expect(jsonData.message).to.eql(\"This request method is not supported.\");\n});\n\npm.test(\"Response has only responseCode and message\", function () {\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\n});\n\npm.test(\"Response does not contain brands list\", function () {\n    pm.expect(jsonData).to.not.have.property(\"brands\");\n});\n\npm.test(\"Content-Type header is present\", function () {\n    pm.expect(pm.response.headers.has(\"Content-Type\")).to.be.true;\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/brandsList",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "brandsList"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_5 : POST To Search Product-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// الـ request: POST {{Domain}}/api/searchProduct\r\n// Body (x-www-form-urlencoded): search_product = tshirt\r\n\r\nlet jsonData;\r\n\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\n// Body structure\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.eql(200);\r\n});\r\n\r\npm.test(\"products is a non-empty array\", function () {\r\n    pm.expect(jsonData.products).to.be.an(\"array\").that.is.not.empty;\r\n});\r\n\r\n// Fields لكل منتج\r\npm.test(\"Each product has required fields with correct types\", function () {\r\n    jsonData.products.forEach(function (p) {\r\n        pm.expect(p.id, \"id\").to.be.a(\"number\");\r\n        pm.expect(p.name, \"name of id \" + p.id).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(p.price, \"price of id \" + p.id).to.be.a(\"string\").and.match(/^Rs\\. \\d+$/);\r\n        pm.expect(p.brand, \"brand of id \" + p.id).to.be.a(\"string\").and.not.empty;\r\n        pm.expect(p.category.usertype.usertype, \"usertype of id \" + p.id).to.be.a(\"string\");\r\n        pm.expect(p.category.category, \"category of id \" + p.id).to.be.a(\"string\").and.not.empty;\r\n    });\r\n});\r\n\r\n// Search relevance: أهم assertion في الـ API ده\r\npm.test(\"All returned products match the search keyword\", function () {\r\n    const keyword = pm.request.body.urlencoded.get(\"search_product\").toLowerCase();\r\n    jsonData.products.forEach(function (p) {\r\n        const text = (p.name + \" \" + p.category.category).toLowerCase().replace(/[\\s-]/g, \"\");\r\n        pm.expect(text, \"product id \" + p.id).to.include(keyword);\r\n    });\r\n});\r\n\r\npm.test(\"All product ids are unique\", function () {\r\n    const ids = jsonData.products.map(p => p.id);\r\n    pm.expect(new Set(ids).size).to.eql(ids.length);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "search_product",
+                  "value": "tshirt"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/searchProduct",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "searchProduct"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_6 : POST To Search Product without search_product parameter-400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// الـ request: POST {{Domain}}/api/searchProduct\r\n// Body: none (من غير search_product)\r\n\r\nlet jsonData;\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\n// الـ body\r\npm.test(\"responseCode inside body is 400\", function () {\r\n    pm.expect(jsonData.responseCode).to.eql(400);\r\n});\r\n\r\npm.test(\"Message is 'Bad request, search_product parameter is missing in POST request.'\", function () {\r\n    pm.expect(jsonData.message).to.eql(\"Bad request, search_product parameter is missing in POST request.\");\r\n});\r\n\r\npm.test(\"Message mentions search_product\", function () {\r\n    pm.expect(jsonData.message).to.include(\"search_product\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response does not contain products list\", function () {\r\n    pm.expect(jsonData).to.not.have.property(\"products\");\r\n});\r\n\r\npm.test(\"Content-Type header is present\", function () {\r\n    pm.response.to.have.header(\"Content-Type\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/searchProduct",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "searchProduct"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Account",
+      "item": [
+        {
+          "name": "API_8 : POST To Verify Login with valid details-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(200);\r\n});\r\n\r\npm.test(\"Message is 'User exists!'\", function () {\r\n    pm.expect(jsonData.message).to.be.a(\"string\").and.eql(\"User exists!\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{randomEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{randomPassword}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/verifyLogin",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_9 : POST To Verify Login without email parameter-400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"responseCode inside body is 400\", function () {\r\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(400);\r\n});\r\n\r\npm.test(\"Message is 'Bad request, email or password parameter is missing in POST request.'\", function () {\r\n    pm.expect(jsonData.message).to.be.a(\"string\")\r\n        .and.eql(\"Bad request, email or password parameter is missing in POST request.\");\r\n});\r\n\r\npm.test(\"Message mentions email and password\", function () {\r\n    pm.expect(jsonData.message).to.include(\"email\").and.include(\"password\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "password",
+                  "value": "{{randomPassword}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/verifyLogin",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_10 : DELETE To Verify Login-405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\n\npm.test(\"Body is a valid JSON\", function () {\n    jsonData = JSON.parse(pm.response.text());\n    pm.expect(jsonData).to.be.an(\"object\");\n});\n\npm.test(\"responseCode inside body is 405\", function () {\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(405);\n});\n\npm.test(\"Message is 'This request method is not supported.'\", function () {\n    pm.expect(jsonData.message).to.be.a(\"string\")\n        .and.eql(\"This request method is not supported.\");\n});\n\npm.test(\"Response has only responseCode and message\", function () {\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\n});\n\npm.test(\"Response time is less than 5000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(5000);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/verifyLogin",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_7 : POST To Create/Register User Account-201",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Generate random email\r\nconst randomStr = Math.random().toString(36).substring(2, 8);\r\nconst timestamp = Date.now();\r\nconst randomEmail = `user_${randomStr}_${timestamp}@gmail.com`;\r\n\r\n// Generate random password\r\nconst randomNum = Math.floor(Math.random() * 90000) + 10000;\r\nconst randomPassword = `Pass@${randomNum}`;\r\n\r\n// Set collection variables\r\npm.collectionVariables.set(\"randomEmail\", randomEmail);\r\npm.collectionVariables.set(\"randomPassword\", randomPassword);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Ahmed Ayman"
+                },
+                {
+                  "key": "email",
+                  "value": "{{randomEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{randomPassword}}"
+                },
+                {
+                  "key": "title",
+                  "value": "Mr"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "15"
+                },
+                {
+                  "key": "birth_month",
+                  "value": "07"
+                },
+                {
+                  "key": "birth_year",
+                  "value": "1998"
+                },
+                {
+                  "key": "firstname",
+                  "value": "Ahmed"
+                },
+                {
+                  "key": "lastname",
+                  "value": "Ayman"
+                },
+                {
+                  "key": "company",
+                  "value": "QA Tech"
+                },
+                {
+                  "key": "address1",
+                  "value": "Street 123"
+                },
+                {
+                  "key": "address2",
+                  "value": "Building 4"
+                },
+                {
+                  "key": "country",
+                  "value": "India"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "110001"
+                },
+                {
+                  "key": "state",
+                  "value": "Delhi"
+                },
+                {
+                  "key": "city",
+                  "value": "New Delhi"
+                },
+                {
+                  "key": "mobile_number",
+                  "value": "9876543210"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/createAccount",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "createAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_11 : DELETE METHOD To Delete User Account-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(200);\r\n});\r\n\r\npm.test(\"Message is 'Account deleted!'\", function () {\r\n    pm.expect(jsonData.message).to.be.a(\"string\").and.eql(\"Account deleted!\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{randomEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{randomPassword}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/deleteAccount",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "deleteAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_12 : PUT METHOD To Update User Account-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(200);\r\n});\r\n\r\npm.test(\"Message is 'User updated!'\", function () {\r\n    pm.expect(jsonData.message).to.be.a(\"string\").and.eql(\"User updated!\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Ahmed Mohamed"
+                },
+                {
+                  "key": "email",
+                  "value": "user_zu1g6b_1791562546300@gmail.com"
+                },
+                {
+                  "key": "password",
+                  "value": "Pass@40546"
+                },
+                {
+                  "key": "title",
+                  "value": "Mr"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "15"
+                },
+                {
+                  "key": "birth_month",
+                  "value": "07"
+                },
+                {
+                  "key": "birth_year",
+                  "value": "1998"
+                },
+                {
+                  "key": "firstname",
+                  "value": "Ahmed"
+                },
+                {
+                  "key": "lastname",
+                  "value": "Mohamed"
+                },
+                {
+                  "key": "company",
+                  "value": "QA Tech Valeo"
+                },
+                {
+                  "key": "address1",
+                  "value": "Street 456"
+                },
+                {
+                  "key": "address2",
+                  "value": "Building 8"
+                },
+                {
+                  "key": "country",
+                  "value": "India"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "110001"
+                },
+                {
+                  "key": "state",
+                  "value": "Delhi"
+                },
+                {
+                  "key": "city",
+                  "value": "New Delhi"
+                },
+                {
+                  "key": "mobile_number",
+                  "value": "9876543210"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/updateAccount",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "updateAccount"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_13 : GET user account detail by email-200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"HTTP status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});\r\n\r\npm.test(\"responseCode inside body is 200\", function () {\r\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(200);\r\n});\r\n\r\npm.test(\"Response contains only responseCode and user\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"user\");\r\n});\r\n\r\npm.test(\"user object has all expected fields\", function () {\r\n    pm.expect(jsonData.user).to.have.all.keys(\r\n        \"id\", \"name\", \"email\", \"title\", \"birth_day\", \"birth_month\", \"birth_year\",\r\n        \"first_name\", \"last_name\", \"company\", \"address1\", \"address2\",\r\n        \"country\", \"state\", \"city\", \"zipcode\"\r\n    );\r\n});\r\n\r\npm.test(\"Field types are correct\", function () {\r\n    const u = jsonData.user;\r\n    pm.expect(u.id, \"id\").to.be.a(\"number\");\r\n    [\"name\", \"email\", \"title\", \"birth_day\", \"birth_month\", \"birth_year\",\r\n     \"first_name\", \"last_name\", \"company\", \"address1\", \"address2\",\r\n     \"country\", \"state\", \"city\", \"zipcode\"].forEach(function (f) {\r\n        pm.expect(u[f], f).to.be.a(\"string\");\r\n    });\r\n});\r\n\r\npm.test(\"Email matches the one sent in the request\", function () {\r\n    pm.expect(jsonData.user.email).to.eql(pm.request.url.query.get(\"email\"));\r\n});\r\n\r\npm.test(\"Email format is valid\", function () {\r\n    pm.expect(jsonData.user.email).to.match(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/);\r\n});\r\n\r\npm.test(\"Password is not exposed in the response\", function () {\r\n    pm.expect(jsonData.user).to.not.have.property(\"password\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{domain}}/api/getUserDetailByEmail?email=user_zu1g6b_1791562546300@gmail.com&=",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "getUserDetailByEmail"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "user_zu1g6b_1791562546300@gmail.com"
+                },
+                {
+                  "key": "",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API_14 : POST To Verify Login with invalid details-404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData;\r\n\r\npm.test(\"Body is a valid JSON\", function () {\r\n    jsonData = JSON.parse(pm.response.text());\r\n    pm.expect(jsonData).to.be.an(\"object\");\r\n});\r\n\r\npm.test(\"responseCode inside body is 404\", function () {\r\n    pm.expect(jsonData.responseCode).to.be.a(\"number\").and.eql(404);\r\n});\r\n\r\npm.test(\"Message is 'User not found!'\", function () {\r\n    pm.expect(jsonData.message).to.be.a(\"string\").and.eql(\"User not found!\");\r\n});\r\n\r\npm.test(\"Response has only responseCode and message\", function () {\r\n    pm.expect(jsonData).to.have.all.keys(\"responseCode\", \"message\");\r\n});\r\n\r\npm.test(\"Response time is less than 3000ms\", function () {\r\n    pm.expect(pm.response.responseTime).to.be.below(3000);\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "wrong_user_2026@gmail.com"
+                },
+                {
+                  "key": "password",
+                  "value": "WrongPass123"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{domain}}/api/verifyLogin",
+              "host": [
+                "{{domain}}"
+              ],
+              "path": [
+                "api",
+                "verifyLogin"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "domain",
+      "value": ""
+    },
+    {
+      "key": "randomEmail",
+      "value": ""
+    },
+    {
+      "key": "randomPassword",
+      "value": ""
+    }
+  ]
+}
